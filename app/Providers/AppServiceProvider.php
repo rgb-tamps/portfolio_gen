@@ -1,4 +1,3 @@
-
 <?php
 
 namespace App\Providers;
@@ -19,10 +18,9 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap application services.
      */
-    public function boot(): void
-    {
-        if (app()->environment('production')) {
-            URL::forceScheme('https');
-        }
+    public function boot(): void{
+    if (app()->environment('production')) {
+        URL::forceScheme('https');
     }
+}
 }
