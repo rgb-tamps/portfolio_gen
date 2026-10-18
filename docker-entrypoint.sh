@@ -1,9 +1,26 @@
+
 #!/bin/sh
-set -eu
+set -e
 
-port="${PORT:-10000}"
-sed -i "s/^Listen 80$/Listen ${port}/" /etc/apache2/ports.conf
-sed -i "s/<VirtualHost \*:80>/<VirtualHost *:${port}>/" /etc/apache2/sites-available/000-default.conf
+cd /var/www/html
 
-su -s /bin/sh www-data -c 'php artisan migrate --force'
+# Force Apache to use only one MPM
+for module in mpm_event mpm_worker mpm_prefork; do
+    a2dismod "$module" 2>/dev/null || true
+done
+
+# Remove any remaining enabled MPM configuration links
+rm -f /etc/apache2/mods-enabled/mpm_*.load
+rm -f /etc/apache2/mods-enabled/mpm_*.conf
+
+# Enable only prefork
+a2enmod mpm_prefork
+
+# Clear Laravel caches and run database migrations
+php artisan optimize:clear
+php artisan migrate --force
+
+# Verify Apache configuration before starting
+apache2ctl -t
+
 exec apache2-foreground
