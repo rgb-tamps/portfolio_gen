@@ -26,8 +26,10 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Configure Apache: use only mpm_prefork
-RUN a2dismod mpm_event mpm_worker \
-    && a2enmod mpm_prefork headers rewrite
+RUN rm -f /etc/apache2/mods-enabled/mpm_*.load \
+          /etc/apache2/mods-enabled/mpm_*.conf \
+    && a2enmod mpm_prefork headers rewrite \
+    && apache2ctl -t
 
 # Point Apache to Laravel's public directory
 RUN sed -ri \
