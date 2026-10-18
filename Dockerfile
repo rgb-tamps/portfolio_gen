@@ -9,10 +9,8 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-
 FROM php:8.4-apache
 
-# Install PHP extensions and PostgreSQL support
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         libonig-dev \
@@ -22,22 +20,20 @@ RUN apt-get update \
     && docker-php-ext-install mbstring pdo_pgsql zip \
     && rm -rf /var/lib/apt/lists/*
 
-# Enable only Apache's prefork MPM, which is required by mod_php.
-RUN find /etc/apache2/mods-enabled -maxdepth 1 \
+# Remove every enabled MPM module and its configuration.
+# Then enable only prefork.
+RUN for module in mpm_event mpm_worker mpm_prefork; do \
+        a2dismod "$module" 2>/dev/null || true; \
+    done \
+    && find /etc/apache2/mods-enabled -maxdepth 1 \
         \( -name 'mpm_*.load' -o -name 'mpm_*.conf' \) \
         -delete \
-    && ln -s ../mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load \
-    && if [ -f /etc/apache2/mods-available/mpm_prefork.conf ]; then \
-        ln -s ../mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf; \
-    fi \
+    && a2enmod mpm_prefork \
     && a2enmod headers rewrite \
-    && apache_modules="$(apache2ctl -M 2>&1)" \
-    && mpm_count="$(printf '%s\n' "$apache_modules" | grep -Ec '^[[:space:]]*mpm_[[:alnum:]_]+_module[[:space:]]')" \
-    && [ "$mpm_count" -eq 1 ] \
-    && printf '%s\n' "$apache_modules" | grep -q 'mpm_prefork_module'
+    && apache2ctl -M 2>&1 \
+    && apache2ctl -t
 
-# Configure Apache to serve Laravel's public directory. The entrypoint sets
-# the listener and virtual host to Railway's assigned PORT at container start.
+# Serve Laravel from the public directory.
 RUN sed -ri \
         's!/var/www/html!/var/www/html/public!g' \
         /etc/apache2/sites-available/000-default.conf \
@@ -46,29 +42,23 @@ RUN sed -ri \
         /etc/apache2/apache2.conf \
     && apache2ctl -t
 
-# PHP upload settings
 RUN printf 'upload_max_filesize=3M\npost_max_size=80M\nmax_file_uploads=31\n' \
     > /usr/local/etc/php/conf.d/uploads.ini
 
-# Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
 
 WORKDIR /var/www/html
 
-# Copy application
 COPY . .
 
-# Copy compiled frontend assets
 COPY --from=frontend /app/public/build /var/www/html/public/build
 
-# Install production dependencies
 RUN composer install \
     --no-dev \
     --no-interaction \
     --prefer-dist \
     --optimize-autoloader
 
-# Prepare Laravel writable directories
 RUN mkdir -p \
         storage/framework/cache \
         storage/framework/sessions \
