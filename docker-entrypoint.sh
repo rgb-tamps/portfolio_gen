@@ -1,26 +1,34 @@
-
 #!/bin/sh
-set -e
+set -eu
 
 cd /var/www/html
 
-# Force Apache to use only one MPM
-for module in mpm_event mpm_worker mpm_prefork; do
-    a2dismod "$module" 2>/dev/null || true
-done
+port="${PORT:-8000}"
+mods_enabled=/etc/apache2/mods-enabled
+mods_available=/etc/apache2/mods-available
 
-# Remove any remaining enabled MPM configuration links
-rm -f /etc/apache2/mods-enabled/mpm_*.load
-rm -f /etc/apache2/mods-enabled/mpm_*.conf
+rm -f "$mods_enabled"/mpm_*.load "$mods_enabled"/mpm_*.conf
+ln -s "$mods_available"/mpm_prefork.load "$mods_enabled"/mpm_prefork.load
 
-# Enable only prefork
-a2enmod mpm_prefork
+if [ -f "$mods_available"/mpm_prefork.conf ]; then
+    ln -s "$mods_available"/mpm_prefork.conf "$mods_enabled"/mpm_prefork.conf
+fi
 
-# Clear Laravel caches and run database migrations
-php artisan optimize:clear
-php artisan migrate --force
+sed -i -E "s/^Listen [0-9]+$/Listen ${port}/" /etc/apache2/ports.conf
+sed -i -E "s/<VirtualHost \*:[0-9]+>/<VirtualHost *:${port}>/" /etc/apache2/sites-available/000-default.conf
 
-# Verify Apache configuration before starting
+apache_modules="$(apache2ctl -M 2>&1)"
+mpm_count="$(printf '%s\n' "$apache_modules" | grep -Ec '^[[:space:]]*mpm_[[:alnum:]_]+_module[[:space:]]')"
+
+if [ "$mpm_count" -ne 1 ] || ! printf '%s\n' "$apache_modules" | grep -q 'mpm_prefork_module'; then
+    printf '%s\n' "$apache_modules" >&2
+    echo "Apache must load exactly one MPM: mpm_prefork_module." >&2
+    exit 1
+fi
+
 apache2ctl -t
+
+php artisan optimize:clear
+su -s /bin/sh www-data -c 'php artisan migrate --force'
 
 exec apache2-foreground

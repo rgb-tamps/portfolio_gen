@@ -22,25 +22,28 @@ RUN apt-get update \
     && docker-php-ext-install mbstring pdo_pgsql zip \
     && rm -rf /var/lib/apt/lists/*
 
-# Remove all enabled Apache MPM module links
+# Enable only Apache's prefork MPM, which is required by mod_php.
 RUN find /etc/apache2/mods-enabled -maxdepth 1 \
         \( -name 'mpm_*.load' -o -name 'mpm_*.conf' \) \
         -delete \
-    && a2enmod mpm_prefork headers rewrite
+    && ln -s ../mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load \
+    && if [ -f /etc/apache2/mods-available/mpm_prefork.conf ]; then \
+        ln -s ../mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf; \
+    fi \
+    && a2enmod headers rewrite \
+    && apache_modules="$(apache2ctl -M 2>&1)" \
+    && mpm_count="$(printf '%s\n' "$apache_modules" | grep -Ec '^[[:space:]]*mpm_[[:alnum:]_]+_module[[:space:]]')" \
+    && [ "$mpm_count" -eq 1 ] \
+    && printf '%s\n' "$apache_modules" | grep -q 'mpm_prefork_module'
 
-# Configure Apache to serve Laravel's public directory on port 8000
+# Configure Apache to serve Laravel's public directory. The entrypoint sets
+# the listener and virtual host to Railway's assigned PORT at container start.
 RUN sed -ri \
         's!/var/www/html!/var/www/html/public!g' \
         /etc/apache2/sites-available/000-default.conf \
     && sed -ri \
         's/AllowOverride None/AllowOverride All/' \
         /etc/apache2/apache2.conf \
-    && sed -ri \
-        's/^Listen 80$/Listen 8000/' \
-        /etc/apache2/ports.conf \
-    && sed -ri \
-        's/<VirtualHost \*:80>/<VirtualHost *:8000>/' \
-        /etc/apache2/sites-available/000-default.conf \
     && apache2ctl -t
 
 # PHP upload settings
