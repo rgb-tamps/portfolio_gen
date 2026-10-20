@@ -251,7 +251,12 @@ class PortfolioController extends Controller
             ],
             'email' => ['required', 'email', 'max:255'],
 
-            'contact_number' => ['nullable', 'string', 'max:30'],
+            'contact_number' => [
+                'nullable',
+                'string',
+                'max:30',
+                'regex:/^[0-9+\s().-]+$/',
+            ],
             'address' => ['nullable', 'string', 'max:1000'],
             'about_me' => ['nullable', 'string', 'max:5000'],
 

@@ -90,7 +90,7 @@
                     </div>
                     <div>
                         <label for="contact_number" class="mb-1 block text-sm font-semibold">Contact number</label>
-                        <input id="contact_number" name="contact_number" value="{{ old('contact_number', $portfolio->contact_number) }}" maxlength="30" autocomplete="tel" class="w-full px-3 py-2.5">
+                        <input id="contact_number" name="contact_number" value="{{ old('contact_number', $portfolio->contact_number) }}" maxlength="30" inputmode="tel" pattern="[0-9+().\s-]+" title="Use digits and common phone-number characters only." autocomplete="tel" class="w-full px-3 py-2.5">
                         @error('contact_number') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
                     </div>
                     <div>

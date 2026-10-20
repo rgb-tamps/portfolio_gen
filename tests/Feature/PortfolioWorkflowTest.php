@@ -20,6 +20,7 @@ class PortfolioWorkflowTest extends TestCase
         $response = $this->actingAs($user)->post(route('portfolios.store'), [
             'full_name' => 'Avery Student',
             'email' => 'avery@example.com',
+            'contact_number' => '+1 (555) 123-4567',
             'about_me' => 'I build useful things.',
             'education_text' => "Computer Science, Example University\n",
             'skills_text' => "PHP\nLaravel",
@@ -41,6 +42,7 @@ class PortfolioWorkflowTest extends TestCase
         $this->assertDatabaseHas('portfolios', [
             'user_id' => $user->id,
             'full_name' => 'Avery Student',
+            'contact_number' => '+1 (555) 123-4567',
             'template' => 'simple',
             'is_published' => false,
         ]);
@@ -86,7 +88,26 @@ class PortfolioWorkflowTest extends TestCase
         $response
             ->assertRedirect(route('portfolios.create'))
             ->assertSessionHasErrors([
-                'full_name' => 'The full name format is invalid.',
+                'full_name' => 'The full name field format is invalid.',
+            ]);
+
+        $this->assertDatabaseCount('portfolios', 0);
+    }
+
+    public function test_portfolio_contact_number_cannot_contain_letters(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->from(route('portfolios.create'))->post(route('portfolios.store'), [
+            'full_name' => 'Avery Student',
+            'email' => 'avery@example.com',
+            'contact_number' => '555-CALL-NOW',
+        ]);
+
+        $response
+            ->assertRedirect(route('portfolios.create'))
+            ->assertSessionHasErrors([
+                'contact_number' => 'The contact number field format is invalid.',
             ]);
 
         $this->assertDatabaseCount('portfolios', 0);
