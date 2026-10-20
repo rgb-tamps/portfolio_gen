@@ -74,6 +74,24 @@ class PortfolioWorkflowTest extends TestCase
         $this->assertDatabaseCount('portfolios', 0);
     }
 
+    public function test_portfolio_full_name_cannot_contain_numbers(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->from(route('portfolios.create'))->post(route('portfolios.store'), [
+            'full_name' => '12345',
+            'email' => 'avery@example.com',
+        ]);
+
+        $response
+            ->assertRedirect(route('portfolios.create'))
+            ->assertSessionHasErrors([
+                'full_name' => 'The full name format is invalid.',
+            ]);
+
+        $this->assertDatabaseCount('portfolios', 0);
+    }
+
     public function test_create_form_exposes_six_steps_and_the_live_quality_tools(): void
     {
         $this->actingAs(User::factory()->create())

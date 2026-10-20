@@ -1,12 +1,17 @@
 <x-guest-layout>
 
-    <div class="mb-6 text-center">
-        <h1 class="text-3xl font-bold text-[#E93F1A]">
-            Welcome back
-        </h1>
-        <p class="mt-2 text-sm text-gray-600">
-            Log in to manage your portfolio.
-        </p>
+    <div class="mb-6">
+        <a href="{{ route('home') }}" class="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-brand">
+            <span aria-hidden="true">←</span> Back to home
+        </a>
+        <div class="text-center">
+            <h1 class="text-3xl font-bold text-[#E93F1A]">
+                Welcome back
+            </h1>
+            <p class="mt-2 text-sm text-gray-600">
+                Log in to manage your portfolio.
+            </p>
+        </div>
     </div>
 
     <!-- Keep the rest of your existing login code below -->

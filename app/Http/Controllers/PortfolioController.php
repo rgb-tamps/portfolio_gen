@@ -243,7 +243,12 @@ class PortfolioController extends Controller
         }
 
         $data = $request->validate([
-            'full_name' => ['required', 'string', 'max:150'],
+            'full_name' => [
+                'required',
+                'string',
+                'max:150',
+                'regex:/^[\pL\pM]+(?:[ \'-][\pL\pM]+)*$/u',
+            ],
             'email' => ['required', 'email', 'max:255'],
 
             'contact_number' => ['nullable', 'string', 'max:30'],

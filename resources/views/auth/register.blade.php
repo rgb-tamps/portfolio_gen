@@ -1,4 +1,8 @@
 <x-guest-layout>
+    <a href="{{ route('home') }}" class="mb-5 inline-flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-brand">
+        <span aria-hidden="true">←</span> Back to home
+    </a>
+
     <form method="POST" action="{{ route('register') }}">
         @csrf
 

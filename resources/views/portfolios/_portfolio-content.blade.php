@@ -43,6 +43,25 @@
                        class="rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-700">
                         Change Template
                     </a>
+                    @unless ($portfolio->is_published)
+                        <form method="POST" action="{{ route('portfolios.publish', $portfolio) }}">
+                            @csrf
+                            <button type="submit" class="rounded-lg bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand-hover">
+                                Publish
+                            </button>
+                        </form>
+                    @else
+                        <a href="{{ route('portfolios.public', $portfolio->slug) }}" target="_blank" rel="noopener"
+                           class="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold hover:bg-slate-50">
+                            Open public page
+                        </a>
+                        <form method="POST" action="{{ route('portfolios.unpublish', $portfolio) }}">
+                            @csrf
+                            <button type="submit" class="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold hover:bg-slate-50">
+                                Unpublish
+                            </button>
+                        </form>
+                    @endunless
                 </nav>
             @else
                 <span class="text-sm text-slate-500">Portfolio</span>
@@ -237,6 +256,25 @@
                        class="rounded-full bg-orange-600 px-4 py-2 text-sm font-bold text-white hover:bg-orange-700">
                         Change Template
                     </a>
+                    @unless ($portfolio->is_published)
+                        <form method="POST" action="{{ route('portfolios.publish', $portfolio) }}">
+                            @csrf
+                            <button type="submit" class="rounded-full bg-orange-600 px-4 py-2 text-sm font-bold text-white hover:bg-orange-700">
+                                Publish
+                            </button>
+                        </form>
+                    @else
+                        <a href="{{ route('portfolios.public', $portfolio->slug) }}" target="_blank" rel="noopener"
+                           class="rounded-full border border-orange-200 px-4 py-2 text-sm font-bold hover:bg-white">
+                            Open public page
+                        </a>
+                        <form method="POST" action="{{ route('portfolios.unpublish', $portfolio) }}">
+                            @csrf
+                            <button type="submit" class="rounded-full border border-orange-200 px-4 py-2 text-sm font-bold hover:bg-white">
+                                Unpublish
+                            </button>
+                        </form>
+                    @endunless
                 </div>
             @endunless
         </div>
@@ -450,6 +488,25 @@
                        class="rounded-lg bg-orange-400 px-3 py-2 text-sm font-bold text-slate-950 hover:bg-orange-300">
                         Change Template
                     </a>
+                    @unless ($portfolio->is_published)
+                        <form method="POST" action="{{ route('portfolios.publish', $portfolio) }}">
+                            @csrf
+                            <button type="submit" class="rounded-lg bg-orange-400 px-3 py-2 text-sm font-bold text-slate-950 hover:bg-orange-300">
+                                Publish
+                            </button>
+                        </form>
+                    @else
+                        <a href="{{ route('portfolios.public', $portfolio->slug) }}" target="_blank" rel="noopener"
+                           class="rounded-lg border border-slate-700 px-3 py-2 text-sm font-bold text-white hover:bg-slate-900">
+                            Open public page
+                        </a>
+                        <form method="POST" action="{{ route('portfolios.unpublish', $portfolio) }}">
+                            @csrf
+                            <button type="submit" class="rounded-lg border border-slate-700 px-3 py-2 text-sm font-bold text-white hover:bg-slate-900">
+                                Unpublish
+                            </button>
+                        </form>
+                    @endunless
                 </div>
             @endunless
         </div>

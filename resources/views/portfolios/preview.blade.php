@@ -7,16 +7,12 @@
     </x-slot>
     @if (session('success')) <div role="status" class="mx-auto mt-5 max-w-5xl rounded-xl bg-green-50 p-4 text-green-800">{{ session('success') }}</div> @endif
     @include('portfolios._portfolio-content', ['portfolio' => $portfolio, 'isPublic' => false])
-    <div class="border-t border-slate-200 bg-white px-4 py-6">
-        <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4">
-            <p class="text-sm text-slate-600">{{ $portfolio->is_published ? 'Your portfolio is public.' : 'Generating publishes your portfolio at /p/'.$portfolio->slug.'.' }}</p>
-            @if ($portfolio->is_published)
-                <a href="{{ route('portfolios.public', $portfolio->slug) }}" target="_blank" rel="noopener" class="rounded-xl border border-slate-300 px-4 py-2.5 font-bold text-slate-700">Open public page ↗</a>
+    @if ($portfolio->is_published)
+        <div class="border-t border-slate-200 bg-white px-4 py-6">
+            <div class="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4">
+                <p class="text-sm text-slate-600">Your portfolio is public.</p>
                 <button type="button" onclick="navigator.clipboard.writeText(@js(route('portfolios.public', $portfolio->slug))).then(() => alert('Public link copied.')).catch(() => alert('Copy failed. Open the public page and copy the address.'))" class="rounded-xl bg-brand px-4 py-2.5 font-bold text-white hover:bg-brand-hover">Copy public link</button>
-                <form method="POST" action="{{ route('portfolios.unpublish', $portfolio) }}">@csrf<button class="rounded-xl border border-slate-300 px-4 py-2.5 font-bold text-slate-700">Unpublish</button></form>
-            @else
-                <form method="POST" action="{{ route('portfolios.publish', $portfolio) }}">@csrf<button class="rounded-xl bg-brand px-4 py-2.5 font-bold text-white hover:bg-brand-hover">Generate and publish portfolio</button></form>
-            @endif
+            </div>
         </div>
-    </div>
+    @endif
 </x-app-layout>
