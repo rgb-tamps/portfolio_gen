@@ -36,6 +36,7 @@
 <form method="POST"
       action="{{ $isEditing ? route('portfolios.update', $portfolio) : route('portfolios.store') }}"
       enctype="multipart/form-data"
+      novalidate
       x-data="portfolioWizard(@js($initialStep), @js(count($projects)), @js(old('template', $portfolio->template ?: 'simple')), @js($profilePicture), @js((bool) $portfolio->profile_picture), @js((bool) old('remove_profile_picture')))"
       x-init="init()"
       class="space-y-6">
@@ -85,8 +86,8 @@
                     </div>
                     <div>
                         <label for="email" class="mb-1 block text-sm font-semibold">Email <span aria-hidden="true">*</span></label>
-                        <input id="email" type="email" name="email" value="{{ old('email', $portfolio->email) }}" maxlength="255" required autocomplete="email" class="w-full px-3 py-2.5">
-                        @error('email') <p class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
+                        <input id="email" type="email" name="email" value="{{ old('email', $portfolio->email) }}" maxlength="255" required autocomplete="email" @error('email') aria-invalid="true" aria-describedby="email-error" @enderror class="w-full px-3 py-2.5">
+                        @error('email') <p id="email-error" class="mt-1 text-sm text-red-700">{{ $message }}</p> @enderror
                     </div>
                     <div>
                         <label for="contact_number" class="mb-1 block text-sm font-semibold">Contact number</label>

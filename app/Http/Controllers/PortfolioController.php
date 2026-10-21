@@ -324,6 +324,9 @@ class PortfolioController extends Controller
             ],
 
             'step' => ['nullable', 'integer', 'between:1,6'],
+        ], [
+            'email.required' => 'Please enter an email address.',
+            'email.email' => 'Please enter a valid email address.',
         ]);
 
         if ($projectsSubmitted && ! array_key_exists('projects', $data)) {

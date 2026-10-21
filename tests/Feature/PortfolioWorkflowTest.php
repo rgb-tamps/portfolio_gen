@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class PortfolioWorkflowTest extends TestCase
@@ -54,6 +55,36 @@ class PortfolioWorkflowTest extends TestCase
         $this->assertSame(['Software Intern, Example Co.'], $portfolio->experience);
         $this->assertSame(['https://github.com/avery', 'https://example.test'], $portfolio->social_links);
         $this->assertSame('Portfolio Generator', $portfolio->projects[0]['title']);
+    }
+
+    #[DataProvider('invalidPortfolioEmails')]
+    public function test_create_rejects_missing_or_malformed_email_without_saving(?string $email, string $expectedMessage): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)
+            ->from(route('portfolios.create'))
+            ->followingRedirects()
+            ->post(route('portfolios.store'), [
+                'full_name' => 'Avery Student',
+                'email' => $email,
+            ]);
+
+        $response
+            ->assertOk()
+            ->assertSee($expectedMessage)
+            ->assertSee('aria-invalid="true"', false)
+            ->assertSee('id="email-error"', false);
+
+        $this->assertDatabaseCount('portfolios', 0);
+    }
+
+    public static function invalidPortfolioEmails(): array
+    {
+        return [
+            'null email' => [null, 'Please enter an email address.'],
+            'malformed email' => ['not-an-email', 'Please enter a valid email address.'],
+        ];
     }
 
     public function test_only_http_links_are_accepted_for_projects_and_social_links(): void
